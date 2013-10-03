@@ -1,0 +1,23 @@
+<?php
+/**
+ * @file
+ * Main file for the islandora_xmlsitemap module.
+ */
+
+
+/**
+ * Implements hook_cron().
+ */
+function islandora_xmlsitemap_cron() {
+  // If the minimum sitemap lifetime hasn't been passed, skip.
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/islandora_xmlsitemap');
+  // TODO: remove the below variable_set so this does not run on every cron run
+  // it is here for testing only
+  variable_set('islandora_xmlsitemap_generated_last', 0);
+  $lifetime = REQUEST_TIME - variable_get('islandora_xmlsitemap_generated_last', 0);
+  if ($lifetime < variable_get('islandora_xmlsitemap_minimum_lifetime', XMLSITEMAP_FREQUENCY_WEEKLY)) {
+    return;
+  }
+  variable_set('islandora_xmlsitemap_generated_last', REQUEST_TIME);
+  xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_update_customlinks');
+}

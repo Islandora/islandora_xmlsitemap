@@ -1,0 +1,11 @@
+name = Islandora XML sitemap
+description = Creates an XML sitemap conforming to the <a href="http://sitemaps.org/">sitemaps.org protocol</a>.
+package = Islandora Tools
+core = 6.x
+dependencies[] = fedora_repository
+dependencies[] = xmlsitemap_custom
+files[] = islandora_xmlsitemap.module
+
+
+
+
