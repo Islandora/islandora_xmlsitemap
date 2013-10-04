@@ -38,7 +38,7 @@ function islandora_xmlsitemap_get_all_objects() {
 ITQLQUERY;
 
   module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  return ObjectHelper::performItqlQuery($itql_query);
+  return ObjectHelper::performRiQuery($itql_query);
 }
 
 /**
@@ -58,6 +58,7 @@ function islandora_xmlsitemap_add_link($pid) {
   $ok_to_add = islandora_xmlsitemap_check($link);
   if ($ok_to_add) {
     $link['id'] = db_result(db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")) + 1;
+    $link['lastmod'] = time();
     xmlsitemap_link_save($link);
   }
 }
