@@ -89,14 +89,13 @@ function islandora_xml_sitemap_add_fulltext_link($link, $pid) {
   $c = new Coins($pid);
   $datastream_array = $c->object->get_datastreams_list_as_array();
   $full_text_uri = $c->get_download_url($datastream_array, FALSE);
+  $c->object->forget();
   xmlsitemap_restore_user();
   if (!empty($full_text_uri)) {
     $link['loc'] = $full_text_uri;
     if (islandora_xmlsitemap_check($link)) {
       $link['id'] = islandora_xml_sitemap_get_next_id();
-      $return_value = xmlsitemap_link_save($link);
-      $c->object->forget();
-      return $return_value;
+      return xmlsitemap_link_save($link);
     }
   }
   return FALSE;
