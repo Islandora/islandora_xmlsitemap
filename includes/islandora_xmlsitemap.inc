@@ -126,7 +126,7 @@ function islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces
  *   A Fedora objects pid
  */
 function islandora_xmlsitemap_add_link($pid) {
-  $data = "islandora/object/$pid";
+  $data = ISLANDORA_XMLSITEMAP_PATH_PREFIX . "$pid";
   $object = islandora_object_load($pid);
   $link = array(
     'type' => 'custom',

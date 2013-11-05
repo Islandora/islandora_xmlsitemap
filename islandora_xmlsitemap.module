@@ -4,7 +4,7 @@
  * Main file for the islandora_xmlsitemap module.
  */
 
-
+define('ISLANDORA_XMLSITEMAP_PATH_PREFIX', 'islandora/object/');
 /**
  * Implements hook_cron().
  */
@@ -16,6 +16,25 @@ function islandora_xmlsitemap_cron() {
   }
   variable_set('islandora_xmlsitemap_generated_last', REQUEST_TIME);
   xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_update_customlinks');
+}
+
+/**
+ * Implements hook_islandora_object_purged.
+ *
+ * When an islandora object is purged we will attempt to remove it from the
+ * xmlsitemap database.
+ */
+function islandora_xmlsitemap_islandora_object_purged($pid) {
+  $loc = ISLANDORA_XMLSITEMAP_PATH_PREFIX . $pid;
+  $id = db_query("SELECT id FROM {xmlsitemap} WHERE type = 'custom'
+  AND loc = :loc", array(
+    ':loc' => $loc))->fetchCol();
+  $id = reset($id);
+  $value = xmlsitemap_link_delete('custom', array('id' => $id));
+  if($value > 0){
+    watchdog('islandora_xmlsitemap', 'Removed link %id with %path from the xmlsitemap',
+    array('%id' => $id, '%path' => $loc));
+  }
 }
 
 /**
