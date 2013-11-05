@@ -3,6 +3,7 @@
  * @file
  * include file for the islandora_xmlsitemap module.
  */
+
 /**
  * Entry point for batch creation.
  * @return array
@@ -10,9 +11,14 @@
  */
 function islandora_xmlsitemap_update_customlinks() {
   $operations = array();
-  $pids = islandora_xmlsitemap_get_all_objects();
-  foreach ($pids as $pid) {
-    $operations[] = array('islandora_xmlsitemap_add_link', $pid);
+  $pids = islandora_xmlsitemap_get_objects();
+  if (!empty($pids)) {
+    foreach ($pids as $result) {
+      $operations[] = array(
+        'islandora_xmlsitemap_add_link',
+        array($result['PID'])
+      );
+    }
   }
   return array(
     'operations' => $operations,
@@ -21,24 +27,96 @@ function islandora_xmlsitemap_update_customlinks() {
 }
 
 /**
- * Performs an itql query that returns all islandora objects.
+ * Gets a batch of pids to process.
  *
- * The objects are limited to children of the root collection for this site
+ * uses variable_get to to get the starting number and the number of objects
+ * to process.
  *
  * @return array
  *   an array of pids
  */
-function islandora_xmlsitemap_get_all_objects() {
-  $root_collection = variable_get('fedora_repository_pid', 'islandora:root');
-  $itql_query = <<<ITQLQUERY
-  select \$object from <#ri>
-  where walk(
-    \$collection <info:fedora/fedora-system:def/relations-external#isMemberOfCollection><info:fedora/$root_collection>
-  and \$object <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> \$collection)
-ITQLQUERY;
+function islandora_xmlsitemap_get_objects() {
+  $namespaces_enforced = variable_get('islandora_namespace_restriction_enforced', FALSE);
+  $namespaces = variable_get('islandora_pids_allowed');
+  $start = variable_get('islandora_xmlsitemap_start', 0);
+  $num_to_process = variable_get('islandora_xmlsitemap_number_of_pids_to_process', 10);
+  $end = $start + $num_to_process;
+  $results = islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces, $start, $num_to_process);
+  if ($results['response']['numFound'] > $end) {
+    variable_set('islandora_xmlsitemap_start', $end);
+  }
+  else {
+    variable_set('islandora_xmlsitemap_start', 0);
+  }
+  $finish = ($end < $results['response']['numFound']) ? $end : $results['response']['numFound'];
+  watchdog('Islandora_xmlsitemap', 'found %count islandora objects, processing %start to %finish',
+    array(
+      '%count' => $results['response']['numFound'],
+      '%start' => $start,
+      '%finish' => $finish
+    ));
+  return $results['response']['docs'];
+}
 
-  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  return ObjectHelper::performRiQuery($itql_query);
+
+/**
+ * Queries solr for a list of pids.
+ *
+ * If namespaces are enabled it will filter by namespace
+ *
+ * @param bool $namespaces_enforced
+ *   TRUE if namespace restrictions are enforced
+ * @param string $namespaces
+ *   The list of namespaces to use if namespace restrictrictions are enforced.
+ *
+ * @param int $start
+ *   start with result
+ * @param int $end
+ *   number of results to fetch
+ *
+ * @return array|null
+ *   an array of solr results
+ *   $results['response']['docs']['pid']
+ */
+function islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces,
+                                               $start, $end) {
+  $solr_location = variable_get('islandora_solr_url', 'http://localhost:8080/solr');
+  $solr_handler = variable_get('islandora_solr_request_handler', FALSE);
+  $path_parts = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
+  $solr_query = 'PID:*';
+  $solr = new Apache_Solr_Service($path_parts['host'], $path_parts['port'], $path_parts['path'] . '/');
+  $solr->setCreateDocuments(0);
+  $solr_params = array();
+  $solr_params['fl'] = array('PID');
+  $solr_params['sort'] = array(variable_get('islandora_xmlsitemap_sort_field', 'fgs_createdDate_dt') . ' asc');
+  if ($solr_handler) {
+    $solr_params['qt'] = $solr_handler;
+  }
+  if ($namespaces_enforced) {
+    $namespace_list = trim(variable_get('islandora_pids_allowed', ''));
+    if ($namespace_list) {
+      $namespaces = preg_split('/[,|\s]/', $namespace_list);
+      $namespace_array = array();
+      foreach (array_filter($namespaces) as $namespace) {
+        $namespace_array[] = 'PID:' . Apache_Solr_Service::escape($namespace) . '*';
+      }
+      $solr_params['fq'][] = implode(' OR ', $namespace_array);
+    }
+  }
+
+  try {
+    $method = 'GET';
+    $results = $solr->search($solr_query, $start, $end, $solr_params, $method);
+  }
+  catch (Exception $e) {
+    watchdog('islandora_xmlsitemap', 'Error getting solr results %e',
+      array('%e' => $e->getMessage()));
+  }
+  $solr_results = NULL;
+  if (!empty($results)) {
+    $solr_results = json_decode($results->getRawResponse(), TRUE);
+  }
+  return $solr_results;
 }
 
 /**
@@ -48,57 +126,20 @@ ITQLQUERY;
  *   A Fedora objects pid
  */
 function islandora_xmlsitemap_add_link($pid) {
-  $data = "fedora/repository/$pid";
+  $data = "islandora/object/$pid";
+  $object = islandora_object_load($pid);
   $link = array(
     'type' => 'custom',
     'loc' => $data,
     'changefreq' => XMLSITEMAP_FREQUENCY_MONTHLY,
     'priority' => XMLSITEMAP_PRIORITY_DEFAULT,
+    // 'lastmod' => $object->lastModifiedDate->format('Y-m-d'),
   );
-  $ok_to_add = islandora_xmlsitemap_check($link);
-  if ($ok_to_add) {
+  if (islandora_xmlsitemap_check($link, $object)) {
     $link['id'] = islandora_xml_sitemap_get_next_id();
     xmlsitemap_link_save($link);
   }
-  islandora_xml_sitemap_add_fulltext_link($link, $pid);
-}
-
-
-/**
- * Add the fulltext link to the xmlsitemap database if there is fulltext.
- *
- * Checks to make sure that we have access and it is not embargoed.  Relies
- * on the UPEI version of the scholar module if the scholar module is not
- * enabled it will return false
- *
- * @param array $link
- *   array containing the links uri, type, priority, changefreq
- * @param string $pid
- *   the pid of the fedora object
- *
- * @return mixed
- *   return FALSE if we did not add a link to the db other wise return the
- * link array
- */
-function islandora_xml_sitemap_add_fulltext_link($link, $pid) {
-  if (!module_exists('scholar')) {
-    return FALSE;
-  }
-  module_load_include('inc', 'scholar', 'Coins');
-  xmlsitemap_switch_user(0);
-  $c = new Coins($pid);
-  $datastream_array = $c->object->get_datastreams_list_as_array();
-  $full_text_uri = $c->get_download_url($datastream_array, FALSE);
-  $c->object->forget();
-  xmlsitemap_restore_user();
-  if (!empty($full_text_uri)) {
-    $link['loc'] = $full_text_uri;
-    if (islandora_xmlsitemap_check($link)) {
-      $link['id'] = islandora_xml_sitemap_get_next_id();
-      return xmlsitemap_link_save($link);
-    }
-  }
-  return FALSE;
+  unset($object);
 }
 
 /**
@@ -108,7 +149,7 @@ function islandora_xml_sitemap_add_fulltext_link($link, $pid) {
  *   the next id for the xmlsitemap link
  */
 function islandora_xml_sitemap_get_next_id() {
-  return db_result(db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")) + 1;
+  return db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")->fetchField() + 1;
 }
 
 
@@ -118,27 +159,24 @@ function islandora_xml_sitemap_get_next_id() {
  * @param array $link
  *   the link array containing link['loc'] (the uri to check)
  *
+ * @param FedoraObject $object
+ *   the object we want to test for access as the anonymous user
+ *
  * @return bool
  *   returns true if the link doesn't already exist in the db and
  * anonymous users can access the link
  */
-function islandora_xmlsitemap_check($link) {
-  if (db_result(db_query_range("SELECT 1 FROM {xmlsitemap} WHERE type = '%s' AND loc = '%s'", $link['type'], $link['loc'], 0, 1))) {
+function islandora_xmlsitemap_check($link, $object) {
+  $results = db_query_range("SELECT 1 FROM {xmlsitemap} WHERE type = 'custom'
+  AND loc = :loc", 0, 1, array(
+    ':loc' => $link['loc']
+  ))->fetchAll();
+  if ($results) {
     return FALSE;
   }
-  // TODO: we can probably make the switch to anonymous more efficient.
-  // In D7 version we can use the islandora perm functions to check access
-  // for now just do menu check as in d6 our access checks have changed over
-  // time and some of our older sites don't have the preferred functions in
-  // there islandora versions.
-  xmlsitemap_switch_user(0);
-  $menu_item = menu_get_item($link['loc']);
-  xmlsitemap_restore_user();
-  if (!$menu_item['access']) {
-    return FALSE;
+  $anon_user = & drupal_static(__FUNCTION__);
+  if (!isset($anon_user)) {
+    $anon_user = drupal_anonymous_user();
   }
-  if ($menu_item && strpos($link['loc'], 'admin/settings/xmlsitemap/custom') === 0 && !user_access('administer xmlsitemap', drupal_anonymous_user())) {
-    return FALSE;
-  }
-  return TRUE;
+  return islandora_object_access(FEDORA_VIEW_OBJECTS, $object);
 }

@@ -10,17 +10,42 @@
  */
 function islandora_xmlsitemap_cron() {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/islandora_xmlsitemap');
-  // Currently there is no admin interface for this module
-  // We want to port this to Drupal 7 and will do more there, like
-  // adding a config for frequency and segmentation for sites with a lot
-  // of Fedora content.  We may also want to check for and link to
-  // certain datastreams.  This was developed for a simple Drupal 6 site.
   $lifetime = REQUEST_TIME - variable_get('islandora_xmlsitemap_generated_last', 0);
-  // TODO: use islandora_xmlsitemap_minimum_lifetime in case we want to update
-  // the database less frequently on larger sites.
   if ($lifetime < variable_get('xmlsitemap_minimum_lifetime', XMLSITEMAP_FREQUENCY_WEEKLY)) {
     return;
   }
   variable_set('islandora_xmlsitemap_generated_last', REQUEST_TIME);
   xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_update_customlinks');
 }
+
+/**
+ * Implements hook_form_alter.
+ */
+function islandora_xmlsitemap_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id != 'xmlsitemap_settings_form') {
+    return;
+  }
+  $form['advanced']['islandora_xmlsitemap_start'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Start indexing Islandora objects at this #',
+    '#default_value' => variable_get('islandora_xmlsitemap_start'),
+    '#size' => 10,
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#description' => "This is the number the next cron run will start with.  Usually you don't need to modify this.",
+  );
+  $form['advanced']['islandora_xmlsitemap_number_of_pids_to_process'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Maximum Number of Islandora links to process at once',
+    '#size' => 10,
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#default_value' => variable_get('islandora_xmlsitemap_number_of_pids_to_process', 1000),
+    '#description' => 'This is the number of Islandora/Fedora links we will process at once',
+  );
+  $form['advanced']['islandora_xmlsitemap_sort_field'] = array(
+    '#type' => 'textfield',
+    '#title' => 'The Solr field to order results by',
+    '#default_value' => variable_get('islandora_xmlsitemap_sort_field', 'fgs_createdDate_dt'),
+    '#description' => 'Enter the name of a solr field to order results by.  A single valued date field  containing the date created would make sense here.',
+  );
+}
+

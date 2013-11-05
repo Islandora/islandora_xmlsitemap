@@ -10,7 +10,8 @@ Add urls for Islandora objects to the xmlsitemaps modules database as custom lin
 
 ### Requirements
 
-* Drupal 6
+* Drupal 7
 * xmlsitemap_custom
-* Islandora for drupal 6 
+* Islandora for drupal 7
+* Islandora_solr_search
 
