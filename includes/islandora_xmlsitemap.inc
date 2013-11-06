@@ -124,10 +124,18 @@ function islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces
  *
  * @param String $pid
  *   A Fedora objects pid
+ * @param AbstractFedora $object
+ *   Add a link to the sitemap for this object
+ *
+ * @return array|null
  */
-function islandora_xmlsitemap_add_link($pid) {
+function islandora_xmlsitemap_add_link($pid, $object = NULL) {
   $data = ISLANDORA_XMLSITEMAP_PATH_PREFIX . "$pid";
-  $object = islandora_object_load($pid);
+  $return = NULL;
+  // When running from cron $object might be not null but not actually what we want.
+  if (!isset($object) || !($object instanceof AbstractFedoraObject)) {
+    $object = islandora_object_load($pid);
+  }
   $link = array(
     'type' => 'custom',
     'loc' => $data,
@@ -137,9 +145,9 @@ function islandora_xmlsitemap_add_link($pid) {
   );
   if (islandora_xmlsitemap_check($link, $object)) {
     $link['id'] = islandora_xml_sitemap_get_next_id();
-    xmlsitemap_link_save($link);
+    $return = xmlsitemap_link_save($link);
   }
-  unset($object);
+  return $return;
 }
 
 /**
@@ -149,6 +157,12 @@ function islandora_xmlsitemap_add_link($pid) {
  *   the next id for the xmlsitemap link
  */
 function islandora_xml_sitemap_get_next_id() {
+  // Mysql was sometimes returning the wrong id which would cause an
+  // Integrity constraint violation when we went to save the link
+  // so adding a short nap here which seems to minimize the issue.
+  // a flush of the mysql table maybe more appropriate but I'm not sure about
+  // overhead as this function will be called many times.
+  time_nanosleep(0, 50000000);
   return db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")->fetchField() + 1;
 }
 
