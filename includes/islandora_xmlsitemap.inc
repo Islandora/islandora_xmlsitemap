@@ -157,12 +157,6 @@ function islandora_xmlsitemap_add_link($pid, $object = NULL) {
  *   the next id for the xmlsitemap link
  */
 function islandora_xml_sitemap_get_next_id() {
-  // Mysql was sometimes returning the wrong id which would cause an
-  // Integrity constraint violation when we went to save the link
-  // so adding a short nap here which seems to minimize the issue.
-  // a flush of the mysql table maybe more appropriate but I'm not sure about
-  // overhead as this function will be called many times.
-  time_nanosleep(0, 50000000);
   return db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")->fetchField() + 1;
 }
 
@@ -192,5 +186,5 @@ function islandora_xmlsitemap_check($link, $object) {
   if (!isset($anon_user)) {
     $anon_user = drupal_anonymous_user();
   }
-  return islandora_object_access(FEDORA_VIEW_OBJECTS, $object);
+  return islandora_user_access($object, array(FEDORA_VIEW_OBJECTS), array(), TRUE, $anon_user);
 }
