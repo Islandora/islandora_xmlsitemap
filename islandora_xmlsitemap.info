@@ -4,7 +4,7 @@ package = Islandora Tools
 core = 7.x
 dependencies[] = islandora
 dependencies[] = xmlsitemap_custom
-dependencies[] = islandora_solr_search
+dependencies[] = islandora_solr
 
 
 
