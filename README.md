@@ -20,8 +20,8 @@ that have been ingested or purged.
 * Islandora for drupal 7
 * Islandora_solr_search
 
-TODO
-----
+### TODO
+
 We should probably should check for permission changes on links we encounter that
 already exist in the link table.  It is possible for access to an object to change which
 could make it unreachable to google scholar in which case we may want to remove the link.
