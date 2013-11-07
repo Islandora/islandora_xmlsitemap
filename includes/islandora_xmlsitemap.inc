@@ -128,6 +128,7 @@ function islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces
  *   Add a link to the sitemap for this object
  *
  * @return array|null
+ *   Returns the link array if the link was successfully saved.
  */
 function islandora_xmlsitemap_add_link($pid, $object = NULL) {
   $data = ISLANDORA_XMLSITEMAP_PATH_PREFIX . "$pid";
@@ -141,11 +142,26 @@ function islandora_xmlsitemap_add_link($pid, $object = NULL) {
     'loc' => $data,
     'changefreq' => XMLSITEMAP_FREQUENCY_MONTHLY,
     'priority' => XMLSITEMAP_PRIORITY_DEFAULT,
+    // TODO figure out why this alwasy ended up as 1970 in the database even though
+    // it looked good at this point.  (find out what format xmlsitemap wants)
     // 'lastmod' => $object->lastModifiedDate->format('Y-m-d'),
   );
   if (islandora_xmlsitemap_check($link, $object)) {
     $link['id'] = islandora_xml_sitemap_get_next_id();
-    $return = xmlsitemap_link_save($link);
+    try {
+      $return = xmlsitemap_link_save($link);
+    }
+    catch (Exception $e) {
+      // If you have PDO errors configured to throw exeptions saving a link may
+      // throw an exception which will cause cron to stop in the middle
+      // of processing. Catching it here, logging the error
+      // and will try to continue processing.
+      watchdog('Islandora_xmlsitemap', 'failed adding link with an id of %id and path of %path',
+        array(
+          '%id' => $link['id'],
+          '%path' => $link['loc'],
+        ));
+    }
   }
   return $return;
 }

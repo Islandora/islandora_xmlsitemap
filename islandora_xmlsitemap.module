@@ -48,11 +48,7 @@ function islandora_xmlsitemap_islandora_object_ingested($object) {
   $pid = $object->id;
   $loc = ISLANDORA_XMLSITEMAP_PATH_PREFIX . $pid;
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/islandora_xmlsitemap');
-  $value = islandora_xmlsitemap_add_link($pid, $object);
-  if (!empty($value)) {
-    watchdog('islandora_xmlsitemap', 'Added link %id with a path of %path to the xmlsitemap',
-      array('%id' => $value['id'], '%path' => $loc));
-  }
+  islandora_xmlsitemap_add_link($pid, $object);
 }
 
 /**
