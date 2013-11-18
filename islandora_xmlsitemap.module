@@ -81,4 +81,3 @@ function islandora_xmlsitemap_form_alter(&$form, &$form_state, $form_id) {
     '#description' => 'Enter the name of a solr field to order results by.  A single valued date field  containing the date created would make sense here.',
   );
 }
-
