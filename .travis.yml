@@ -5,14 +5,19 @@ php:
 branches:
   only:
     - /^7\.x/
+env:
+  - FEDORA_VERSION="3.7.0"
+  - FEDORA_VERSION="3.6.2"
+  - FEDORA_VERSION="3.5"
 before_install:
   - cd $HOME
   - git clone -b 7.x git://github.com/Islandora/islandora.git
-  - git clone -b 7.x git://github.com/Islandora/islandora_solr_search.git
   - export ISLANDORA_DIR=$HOME/islandora
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
   - ln -s $TRAVIS_BUILD_DIR sites/all/modules/islandora_xmlsitemap
+  - cd sites/all/modules
+  - git clone -b 7.x git://github.com/Islandora/islandora_solr_search.git
   - drush dl --yes xmlsitemap
   - drush en --yes islandora_xmlsitemap
 script:
