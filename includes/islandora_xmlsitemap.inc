@@ -142,9 +142,7 @@ function islandora_xmlsitemap_add_link($pid, $object = NULL) {
     'loc' => $data,
     'changefreq' => XMLSITEMAP_FREQUENCY_MONTHLY,
     'priority' => XMLSITEMAP_PRIORITY_DEFAULT,
-    // TODO figure out why this alwasy ended up as 1970 in the database even though
-    // it looked good at this point.  (find out what format xmlsitemap wants)
-    // 'lastmod' => $object->lastModifiedDate->format('Y-m-d'),
+    'lastmod' => $object->lastModifiedDate->getTimestamp(),
   );
   if (islandora_xmlsitemap_check($link, $object)) {
     $link['id'] = islandora_xml_sitemap_get_next_id();
