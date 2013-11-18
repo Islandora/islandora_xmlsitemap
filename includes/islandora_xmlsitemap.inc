@@ -16,13 +16,12 @@ function islandora_xmlsitemap_update_customlinks() {
     foreach ($pids as $result) {
       $operations[] = array(
         'islandora_xmlsitemap_add_link',
-        array($result['PID'])
+        array($result['PID']),
       );
     }
   }
   return array(
     'operations' => $operations,
-    'finished' => 'Finished adding Custom Links'
   );
 }
 
@@ -53,7 +52,7 @@ function islandora_xmlsitemap_get_objects() {
     array(
       '%count' => $results['response']['numFound'],
       '%start' => $start,
-      '%finish' => $finish
+      '%finish' => $finish,
     ));
   return $results['response']['docs'];
 }
@@ -133,7 +132,8 @@ function islandora_xmlsitemap_solr_get_results($namespaces_enforced, $namespaces
 function islandora_xmlsitemap_add_link($pid, $object = NULL) {
   $data = ISLANDORA_XMLSITEMAP_PATH_PREFIX . "$pid";
   $return = NULL;
-  // When running from cron $object might be not null but not actually what we want.
+  // When running from cron $object might be not null but not actually what we
+  // want.
   if (!isset($object) || !($object instanceof AbstractFedoraObject)) {
     $object = islandora_object_load($pid);
   }
@@ -191,7 +191,7 @@ function islandora_xml_sitemap_get_next_id() {
 function islandora_xmlsitemap_check($link, $object) {
   $results = db_query_range("SELECT 1 FROM {xmlsitemap} WHERE type = 'custom'
   AND loc = :loc", 0, 1, array(
-    ':loc' => $link['loc']
+    ':loc' => $link['loc'],
   ))->fetchAll();
   if ($results) {
     return FALSE;
