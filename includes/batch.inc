@@ -9,18 +9,22 @@
  * Get the our basic batch structure.
  *
  * @param int $jump
- *   The number of records to grab each iteration.
+ *   The number of records to grab each iteration. Defaults to 100.
  * @param int $cutoff
- *   The number of records to process per batch.
+ *   The number of records to process per batch. -1 means to attempt to process
+ *   ALL records, NULL to process the default quatitiy, as specified by the
+ *   'islandora_xmlsitemap_number_of_pids_to_process' variable.
  *
  * @return array
  *   An array representing the batch.
  */
-function islandora_xmlsitemap_get_batch($jump = 20, $cutoff = 100) {
+function islandora_xmlsitemap_get_batch($jump = 100, $cutoff = NULL) {
   $mod_path = drupal_get_path('module', 'islandora_xmlsitemap');
+  if ($cutoff === NULL) {
+    $cutoff = variable_get('islandora_xmlsitemap_number_of_pids_to_process', 1000);
+  }
   $batch = array(
     'operations' => array(
-      // TODO: Use config for the number to pass.
       array('islandora_xmlsitemap_batch_operation', array($jump, $cutoff)),
     ),
     'file' => "$mod_path/includes/batch.inc",
