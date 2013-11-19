@@ -82,7 +82,7 @@ function islandora_xmlsitemap_admin_form_submit(&$form, &$form_state) {
     }
 
     module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
-    $batch = islandora_xmlsitemap_get_batch(1000, -1);
+    $batch = islandora_xmlsitemap_get_batch(100, -1);
     batch_set($batch);
   }
   elseif ($button == 'submit') {
