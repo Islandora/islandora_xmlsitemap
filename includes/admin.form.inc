@@ -45,6 +45,14 @@ function islandora_xmlsitemap_admin_form($form, &$form_state) {
 
   $form['actions'] = array(
     '#type' => 'actions',
+    'generate' => array(
+      '#type' => 'submit',
+      '#value' => t('Generate remaining entries'),
+    ),
+    'regenerate' => array(
+      '#type' => 'submit',
+      '#value' => t('Regenerate all Islandora entries'),
+    ),
     'submit' => array(
       '#type' => 'submit',
       '#value' => t('Save configuration'),
@@ -68,7 +76,16 @@ function islandora_xmlsitemap_admin_form_submit(&$form, &$form_state) {
     'islandora_xmlsitemap_last_modified_field',
     'islandora_xmlsitemap_number_of_pids_to_process',
   );
-  if ($button == 'submit') {
+  if ($button == 'generate' || $button == 'regenerate') {
+    if ($button == 'regenerate') {
+      variable_del('islandora_xmlsitemap_last_modified_value');
+    }
+
+    module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
+    $batch = islandora_xmlsitemap_get_batch(1000, -1);
+    batch_set($batch);
+  }
+  elseif ($button == 'submit') {
     foreach ($to_set as $var) {
       variable_set($var, $form_state['values'][$var]);
     }
