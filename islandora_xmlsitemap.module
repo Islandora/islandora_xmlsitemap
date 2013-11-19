@@ -70,6 +70,26 @@ function islandora_xmlsitemap_islandora_object_modified($object) {
 }
 
 /**
+ * Implements hook_islandora_datastream_purged().
+ */
+function islandora_xmlsitemap_islandora_datastream_purged($object, $dsid) {
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  drupal_static_reset('islandora_object_access');
+  islandora_xmlsitemap_add_or_update_link($object->id);
+}
+
+/**
+ * Implements hook_islandora_datastream_ingested().
+ *
+ * When an Islandora datastream is ingested we will attempt to add a link to the
+ * xmlsitemap database (to update).
+ */
+function islandora_xmlsitemap_islandora_datastream_ingested($object, $datastrean) {
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  islandora_xmlsitemap_add_or_update_link($object->id);
+}
+
+/**
  * Implements hook_islandora_datastream_modified().
  *
  * When an Islandora datastream is modified we will attempt to add a link to the
