@@ -9,13 +9,8 @@ define('ISLANDORA_XMLSITEMAP_PATH_PREFIX', 'islandora/object/');
  * Implements hook_cron().
  */
 function islandora_xmlsitemap_cron() {
-  module_load_include('inc', 'islandora_xmlsitemap', 'includes/islandora_xmlsitemap');
-  $lifetime = REQUEST_TIME - variable_get('islandora_xmlsitemap_generated_last', 0);
-  if ($lifetime < variable_get('xmlsitemap_minimum_lifetime', XMLSITEMAP_FREQUENCY_WEEKLY)) {
-    return;
-  }
-  variable_set('islandora_xmlsitemap_generated_last', REQUEST_TIME);
-  xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_update_customlinks');
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
+  xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_get_batch');
 }
 
 /**
@@ -25,16 +20,29 @@ function islandora_xmlsitemap_cron() {
  * xmlsitemap database.
  */
 function islandora_xmlsitemap_islandora_object_purged($pid) {
-  $loc = ISLANDORA_XMLSITEMAP_PATH_PREFIX . $pid;
-  $id = db_query("SELECT id FROM {xmlsitemap} WHERE type = 'custom'
-  AND loc = :loc", array(
-    ':loc' => $loc,
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+
+  $q = <<<EOQ
+SELECT id
+FROM {xmlsitemap}
+WHERE type = 'custom' AND (
+  subtype = :sub_type OR loc = :loc
+)
+EOQ;
+  $ids = db_query($q, array(
+    ':sub_type' => islandora_xmlsitemap_get_subtype_id($pid),
+    ':loc' => islandora_xmlsitemap_get_link_url($pid),
   ))->fetchCol();
-  $id = reset($id);
-  $value = xmlsitemap_link_delete('custom', array('id' => $id));
-  if ($value > 0) {
-    watchdog('islandora_xmlsitemap', 'Removed link %id with a path of %path from the xmlsitemap',
-      array('%id' => $id, '%path' => $loc));
+
+  foreach ($ids as $id) {
+    $link = xmlsitemap_custom_load($id);
+    $value = xmlsitemap_link_delete('custom', array('id' => $id));
+    if ($value > 0) {
+      watchdog('islandora_xmlsitemap', 'Removed link %id with a path of %path from the xmlsitemap', array(
+        '%id' => $id,
+        '%path' => $link['loc'],
+      ));
+    }
   }
 }
 
@@ -45,39 +53,47 @@ function islandora_xmlsitemap_islandora_object_purged($pid) {
  * xmlsitemap database.
  */
 function islandora_xmlsitemap_islandora_object_ingested($object) {
-  $pid = $object->id;
-  $loc = ISLANDORA_XMLSITEMAP_PATH_PREFIX . $pid;
-  module_load_include('inc', 'islandora_xmlsitemap', 'includes/islandora_xmlsitemap');
-  islandora_xmlsitemap_add_link($pid, $object);
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  islandora_xmlsitemap_add_or_update_link($object->id);
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_islandora_object_modified().
+ *
+ * When an Islandora object is modified we will attempt to add a link to the
+ * xmlsitemap database.
  */
-function islandora_xmlsitemap_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id != 'xmlsitemap_settings_form') {
-    return;
-  }
-  $form['advanced']['islandora_xmlsitemap_start'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Start indexing Islandora objects at this #',
-    '#default_value' => variable_get('islandora_xmlsitemap_start'),
-    '#size' => 10,
-    '#element_validate' => array('element_validate_integer_positive'),
-    '#description' => "This is the number the next cron run will start with.  Usually you don't need to modify this.",
+function islandora_xmlsitemap_islandora_object_modified($object) {
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  drupal_static_reset('islandora_object_access');
+  islandora_xmlsitemap_add_or_update_link($object->id);
+}
+
+/**
+ * Implements hook_islandora_datastream_modified().
+ *
+ * When an Islandora datastream is modified we will attempt to add a link to the
+ * xmlsitemap database.
+ */
+function islandora_xmlsitemap_islandora_datastream_modified($object, $datastream) {
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  drupal_static_reset('islandora_object_access');
+  islandora_xmlsitemap_add_or_update_link($object->id);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_xmlsitemap_menu() {
+  $items = array();
+
+  $items['admin/islandora/xmlsitemap'] = array(
+    'title' => 'XML Sitemap Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_xmlsitemap_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/admin.form.inc',
   );
-  $form['advanced']['islandora_xmlsitemap_number_of_pids_to_process'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Maximum Number of Islandora links to process at once',
-    '#size' => 10,
-    '#element_validate' => array('element_validate_integer_positive'),
-    '#default_value' => variable_get('islandora_xmlsitemap_number_of_pids_to_process', 1000),
-    '#description' => 'This is the number of Islandora/Fedora links we will process at once',
-  );
-  $form['advanced']['islandora_xmlsitemap_sort_field'] = array(
-    '#type' => 'textfield',
-    '#title' => 'The Solr field to order results by',
-    '#default_value' => variable_get('islandora_xmlsitemap_sort_field', 'fgs_createdDate_dt'),
-    '#description' => 'Enter the name of a solr field to order results by.  A single valued date field  containing the date created would make sense here.',
-  );
+
+  return $items;
 }
