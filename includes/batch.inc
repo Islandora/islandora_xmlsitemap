@@ -88,6 +88,9 @@ function islandora_xmlsitemap_batch_operation($jump, $cutoff, &$context) {
     (int) $results['response']['numFound'];
   if ($results === NULL || $sandbox['total'] === 0) {
     $context['message'] = t('No results selected, or errored...');
+    // Stash the most current value, so we can hopefully pick up where we left
+    // off last time.
+    variable_set('islandora_xmlsitemap_last_modified_value', $sandbox['last_modified']);
     return;
   }
 
