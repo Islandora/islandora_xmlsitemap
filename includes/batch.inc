@@ -24,6 +24,7 @@ function islandora_xmlsitemap_get_batch($jump = 100, $cutoff = NULL) {
     $cutoff = variable_get('islandora_xmlsitemap_number_of_pids_to_process', 1000);
   }
   $batch = array(
+    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaining @estimate.'),
     'operations' => array(
       array('islandora_xmlsitemap_batch_operation', array($jump, $cutoff)),
     ),
