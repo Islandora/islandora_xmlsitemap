@@ -63,6 +63,7 @@ function islandora_xmlsitemap_batch_operation($jump, $cutoff, &$context) {
       "$date_field:[* TO *]";
     $qp->solrParams['sort'] = "$date_field asc";
     $qp->solrParams['fq'] = array();
+    $qp->solrParams['fl'] = 'PID';
 
     $namespaces_enforced = variable_get('islandora_namespace_restriction_enforced', FALSE);
     if ($namespaces_enforced) {
@@ -100,6 +101,7 @@ function islandora_xmlsitemap_batch_operation($jump, $cutoff, &$context) {
   foreach ($results['response']['objects'] as $result) {
     islandora_xmlsitemap_add_or_update_link($result['PID'], $sandbox);
   }
+  $qp->resetResults();
 
   $context['message'] = t('Processed @count of @total.', array(
     '@count' => min($sandbox['offset'] + $jump, $sandbox['total']),
