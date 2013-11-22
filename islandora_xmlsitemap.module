@@ -86,6 +86,7 @@ function islandora_xmlsitemap_islandora_datastream_purged($object, $dsid) {
  */
 function islandora_xmlsitemap_islandora_datastream_ingested($object, $datastrean) {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  drupal_static_reset('islandora_object_access');
   islandora_xmlsitemap_add_or_update_link($object->id);
 }
 
