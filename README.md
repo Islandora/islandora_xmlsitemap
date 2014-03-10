@@ -1,4 +1,4 @@
-# Islandora XML sitemap
+# Islandora XML sitemap [![Build Status](https://travis-ci.org/Islandora/islandora_xmlsitemap.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_xmlsitemap)
 
 ## Description
 Add URLs for Islandora objects to the xmlsitemaps modules database as custom links.  When the xmlsitemap module creates its site maps it will include these custom links.
