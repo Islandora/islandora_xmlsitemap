@@ -21,7 +21,7 @@ objects, including:
 ### Requirements
 
 * Drupal 7
-  * xmlsitemap_custom
+  * xmlsitemap_custom which is part of [XML sitemap](https://drupal.org/project/xmlsitemap)
   * [islandora](http://github.com/Islanora/islandora)
   * [islandora_solr](http://github.com/Islandora/islandora_solr_search)
 
