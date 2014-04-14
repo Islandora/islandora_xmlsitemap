@@ -108,7 +108,7 @@ function islandora_xmlsitemap_islandora_datastream_modified($object, $datastream
 function islandora_xmlsitemap_menu() {
   $items = array();
 
-  $items['admin/islandora/xmlsitemap'] = array(
+  $items['admin/islandora/tools/xmlsitemap'] = array(
     'title' => 'XML Sitemap Integration',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_xmlsitemap_admin_form'),
