@@ -1,9 +1,14 @@
 <?php
 
 /**
+ * @file
+ * This file contains all install related hooks.
+ */
+
+/**
  * Implements hook_uninstall().
  */
-function islandora_xmlsitemap_uninstall () {
+function islandora_xmlsitemap_uninstall() {
   $variables = array(
     'islandora_xmlsitemap_number_of_pids_to_process',
     'islandora_xmlsitemap_last_modified_value',
@@ -12,4 +17,3 @@ function islandora_xmlsitemap_uninstall () {
   );
   array_walk($variables, 'variable_del');
 }
-
