@@ -2,16 +2,16 @@
 
 ## Introduction
 
-Add URLs for Islandora objects to the xmlsitemaps modules database as custom links.  When the xmlsitemap module creates its site maps it will include these custom links.
+Add URLs for Islandora objects to the XML sitemap module's database as custom links.  When the XML sitemap module creates its sitemap it will include these custom links.
 
 ## Requirements
 
-This module requires the following modules/libraries:
+This module requires the following modules and library:
 
 * [Islandora](https://github.com/islandora/islandora)
-* [Tuque](https://github.com/islandora/tuque)
 * [xmlsitemap_custom](https://drupal.org/project/xmlsitemap) (Part of XML Sitemap)
 * [islandora_solr](http://github.com/Islandora/islandora_solr_search)
+* [Tuque](https://github.com/islandora/tuque)
 
 ## Installation
 
@@ -27,7 +27,7 @@ Set 'Last Modified Solr Field' and 'Maximum number of Islandora links to process
 
 Admins can configure the number of pids to process plus the Solr field to sort on.
 
-To remove or edit links you can manage them in the xmlsitemap custom links tab.
+To remove or edit links you can manage them in the XML sitemap Custom Links tab (admin/config/search/xmlsitemap/custom).
 
 We have also implemented a number of hooks to automatically add/remove links to objects, including:
 
