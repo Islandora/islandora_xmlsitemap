@@ -27,7 +27,7 @@ Set 'Last Modified Solr Field' and 'Maximum number of Islandora links to process
 
 Admins can configure the number of pids to process plus the Solr field to sort on.
 
-To remove or edit links you can manage them in the xmlsitemap custom links tab.
+To remove or edit links you can manage them in the XML sitemap Custom Links tab (admin/config/search/xmlsitemap/custom).
 
 We have also implemented a number of hooks to automatically add/remove links to objects, including:
 
