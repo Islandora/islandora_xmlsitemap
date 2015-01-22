@@ -21,7 +21,7 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 Set 'Last Modified Solr Field' and 'Maximum number of Islandora links to process at once' in Administration » Islandora » XML Sitemap Integration (admin/islandora/xmlsitemap).
 
-![Configuration](http://i.imgur.com/EZSOKh7.png)
+![Configuration](https://camo.githubusercontent.com/407972e0a2c14bafd74924992c659021b800abb0/687474703a2f2f692e696d6775722e636f6d2f455a534f4b68372e706e67)
 
 ### Notes
 
