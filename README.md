@@ -38,12 +38,6 @@ We have also implemented a number of hooks to automatically add/remove links to 
 * `hook_islandora_datastream_ingested()`
 * `hook_islandora_datastream_modified()`
 
-## Configuration
-
-Set the paths for `example` and `module` in Administration » Islandora » MODULE (admin/islandora/module).
-
-Include a screenshot of configuration page.
-
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
@@ -59,8 +53,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Paul Pound](https://github.com/ppound)
-* [UPEI/Roberston Library](https://github.com/roblib)
+* [Peter Murray](https://github.com/dltj)
 
 ## Development
 
