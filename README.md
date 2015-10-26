@@ -38,6 +38,12 @@ We have also implemented a number of hooks to automatically add/remove links to 
 * `hook_islandora_datastream_ingested()`
 * `hook_islandora_datastream_modified()`
 
+Objects must be publicly (anonymously) available to be included in the XML Sitemap.  Note that the listing of Custom Links in the Drupal XML Sitemap module does not necessarily equate to inclusion in the sitemap; an Islandora object may be listed in the Custom Links table (admin/config/search/xmlsitemap/custom) and still not be in the sitemap.xml file if the object is not publicly available.  If Islandora objects are not appearing in the XML Sitemap, check the following:
+
+1. Ensure that the Islandora XML Sitemap and the Drupal XML Sitemap Custom Links modules are enabled.
+1. Ensure that the anonymous Drupal user has the "View repository objects" permission (admin/people/permissions).
+1. XACML permissions override the Drupal "View repository objects" permission.  Make sure that there are no extra XACML permissions on the object.
+
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
