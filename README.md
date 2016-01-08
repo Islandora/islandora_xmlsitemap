@@ -44,6 +44,8 @@ Objects must be publicly (anonymously) available to be included in the XML Sitem
 1. Ensure that the anonymous Drupal user has the "View repository objects" permission (admin/people/permissions).
 1. XACML permissions override the Drupal "View repository objects" permission.  Make sure that there are no extra XACML permissions on the object.
 
+Please also note that objects marked as "inactive", whether manually or by using the [Simple Workflow](https://github.com/Islandora/islandora_simple_workflow) module, will still be indexed by default.
+
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
