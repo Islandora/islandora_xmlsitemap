@@ -38,6 +38,8 @@ We have also implemented a number of hooks to automatically add/remove links to 
 * `hook_islandora_datastream_ingested()`
 * `hook_islandora_datastream_modified()`
 
+Please also note that objects marked as "inactive", whether manually or by using the [Simple Workflow](https://github.com/Islandora/islandora_simple_workflow) module, will still be indexed by default.
+
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
