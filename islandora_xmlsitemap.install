@@ -21,6 +21,8 @@ function islandora_xmlsitemap_uninstall() {
  * Implements hook_install().
  */
 function islandora_xmlsitemap_install() {
+  // XXX: Taking advantage of the update hook's batch functionality to run the
+  // same batch on install as one would have to in the update hook.
   islandora_xmlsitemap_update_7000();
 }
 
