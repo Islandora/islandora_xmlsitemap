@@ -83,7 +83,7 @@ function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
   }
 
   // Start filling in records.
-  foreach (array_fill(0, min(100, $sandbox['target'] - $sandbox['current']), NULL) as $increment) {
+  foreach (array_fill(0, min(1000, $sandbox['target'] - $sandbox['current']), NULL) as $increment) {
     islandora_xmlsitemap_get_incremented_id($increment);
     $sandbox['current']++;
   }
