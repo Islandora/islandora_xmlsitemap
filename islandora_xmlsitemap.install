@@ -57,8 +57,6 @@ function islandora_xmlsitemap_schema() {
  * Add the ID table schema in.
  */
 function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
-  $schema = islandora_xmlsitemap_schema();
-  db_create_table('islandora_xmlsitemap_entry_ids', $schema['islandora_xmlsitemap_entry_ids']);
   islandora_xmlsitemap_set_initial_value();
 }
 
