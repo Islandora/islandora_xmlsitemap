@@ -21,19 +21,16 @@ function islandora_xmlsitemap_uninstall() {
  * Implements hook_install().
  */
 function islandora_xmlsitemap_install() {
-  islandora_xmlsitemap_set_initial_value();
+  // XXX: Taking advantage of the update hook's batch functionality to run the
+  // same batch on install as one would have to in the update hook.
+  islandora_xmlsitemap_update_7000();
 }
 
 /**
  * Implements hook_schema().
- *
- * @see https://jira.duraspace.org/browse/ISLANDORA-1784
  */
 function islandora_xmlsitemap_schema() {
   return array(
-    // XXX: This table satisfies a race condition (details in the @see for this
-    // method); the best way to satisfy this condition was using an
-    // auto-incrementing ID in a table.
     'islandora_xmlsitemap_entry_ids' => array(
       'description' => 'Autoincrementing table to store IDs we can use for xmlsitemap table entries.',
       'fields' => array(
@@ -55,33 +52,44 @@ function islandora_xmlsitemap_schema() {
 
 /**
  * Add the ID table schema in.
+ *
+ * XXX: satisfies a race condition (details in the @see below); the best way to
+ * satisfy this condition was using an auto-incrementing ID in a table, but if
+ * islandora_xmlsitemap is already in use, the ID likely can't simply start at
+ * 1. This function iterates the auto-incrementing ID field to the point where
+ * it's supposed to be. It's a little bit goofy to do it this way, but it
+ * ensures that the method we're using to set the initial ID is database-
+ * agnostic.
+ *
+ * @see https://jira.duraspace.org/browse/ISLANDORA-1784
  */
 function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
-  islandora_xmlsitemap_set_initial_value();
-}
-
-/**
- * Sets the initial ID value of the islandora_xmlsitemap_entry_ids table.
- *
- * XXX: It's possible for the 'custom' type in xmlsitemap to already be in use,
- * so we're just making sure we're out of range of existing IDs.
- */
-function islandora_xmlsitemap_set_initial_value() {
-  // Get the target initial value.
-  $q = db_select('xmlsitemap', 'x');
-  $q->addExpression('MAX(id)');
-  $q->condition('type', 'custom', '=');
-  $current_id = $q->execute()->fetchField();
-  $target = $current_id !== FALSE ? $current_id + 1 : 1;
-
-  // Insert it.
-  $q = db_insert('islandora_xmlsitemap_entry_ids')
-    ->fields(array(
-      'pid' => NULL,
-      'id' => $target,
-    ))
-    ->execute();
-  // Delete it.
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
-  islandora_xmlsitemap_delete_increment_record(NULL);
+  if (!isset($sandbox['target'])) {
+    // Create our table, if it doesn't exist.
+    if (!db_table_exists('islandora_xmlsitemap_entry_ids')) {
+      $schema = islandora_xmlsitemap_schema();
+      db_create_table('islandora_xmlsitemap_entry_ids', $schema['islandora_xmlsitemap_entry_ids']);
+    }
+    // Set an initial value.
+    islandora_xmlsitemap_insert_increment_record(NULL);
+    // And immediately give it the boot.
+    islandora_xmlsitemap_delete_increment_record(NULL);
+    // Get the current max.
+    $q = db_select('xmlsitemap', 'x');
+    $q->addExpression('MAX(id)');
+    $q->condition('type', 'custom', '=');
+    $current_id = $q->execute()->fetchField();
+    $sandbox['target'] = $current_id !== FALSE ? $current_id : 1;
+    $sandbox['current'] = 1;
+  }
+
+  // Start filling in records.
+  foreach (array_fill(0, min(1000, $sandbox['target'] - $sandbox['current']), NULL) as $increment) {
+    islandora_xmlsitemap_get_incremented_id($increment);
+    $sandbox['current']++;
+  }
+
+  // Are we done?
+  $context['#finished'] = $sandbox['current'] / $sandbox['target'];
 }
