@@ -94,15 +94,3 @@ EOQ;
     ':loc' => islandora_xmlsitemap_get_link_url($pid),
   ))->fetch(PDO::FETCH_ASSOC);
 }
-
-/**
- * Gets the next link ID from this module's custom table.
- *
- * @param string $pid
- *   The PID to insert into the table for this link ID.
- *
- * @return int
- *   The next ID.
- */
-function islandora_xmlsitemap_get_next_link_id($pid) {
-}
