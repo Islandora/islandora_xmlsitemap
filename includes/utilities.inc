@@ -67,7 +67,13 @@ function islandora_xmlsitemap_add_or_update_link($pid, &$sandbox = NULL) {
   $link += (array) islandora_xmlsitemap_get_current($pid);
   if (!isset($link['id'])) {
     module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
-    $link['id'] = islandora_xmlsitemap_get_incremented_id($pid);
+    try {
+      islandora_xmlsitemap_insert_increment_record($pid);
+    }
+    catch (PDOException $e) {
+      // Don't do anything in this case; we already have an ID.
+    }
+    $link['id'] = islandora_xmlsitemap_get_id_for_record($pid);
   }
 
   return xmlsitemap_link_save($link);

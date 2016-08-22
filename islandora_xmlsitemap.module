@@ -21,6 +21,7 @@ function islandora_xmlsitemap_cron() {
  */
 function islandora_xmlsitemap_islandora_object_purged($pid) {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/utilities');
+  module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
 
   $q = <<<EOQ
 SELECT id
@@ -44,6 +45,7 @@ EOQ;
       ));
     }
   }
+  islandora_xmlsitemap_delete_increment_record($pid);
 }
 
 /**

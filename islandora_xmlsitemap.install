@@ -31,6 +31,10 @@ function islandora_xmlsitemap_install() {
  */
 function islandora_xmlsitemap_schema() {
   return array(
+    // This table satisfies a race condition where we cannot guarantee unique
+    // IDs in the xmlsitemap table when ingesting concurrently, so we generate
+    // them here instead. See https://jira.duraspace.org/browse/ISLANDORA-1784
+    // for more details.
     'islandora_xmlsitemap_entry_ids' => array(
       'description' => 'Autoincrementing table to store IDs we can use for xmlsitemap table entries.',
       'fields' => array(
@@ -42,26 +46,17 @@ function islandora_xmlsitemap_schema() {
         'pid' => array(
           'description' => 'The PID relating to this ID.',
           'type' => 'varchar',
-          'length' => 255,
+          'length' => 64,
         ),
       ),
       'primary key' => array('id'),
+      'unique keys' => array('pid' => array('pid')),
     ),
   );
 }
 
 /**
- * Add the ID table schema in.
- *
- * XXX: satisfies a race condition (details in the @see below); the best way to
- * satisfy this condition was using an auto-incrementing ID in a table, but if
- * islandora_xmlsitemap is already in use, the ID likely can't simply start at
- * 1. This function iterates the auto-incrementing ID field to the point where
- * it's supposed to be. It's a little bit goofy to do it this way, but it
- * ensures that the method we're using to set the initial ID is database-
- * agnostic.
- *
- * @see https://jira.duraspace.org/browse/ISLANDORA-1784
+ * Add the ID table schema in, and set the initial ID.
  */
 function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
@@ -81,12 +76,17 @@ function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
     $q->condition('type', 'custom', '=');
     $current_id = $q->execute()->fetchField();
     $sandbox['target'] = $current_id !== FALSE ? $current_id : 1;
-    $sandbox['current'] = 1;
+    $sandbox['current'] = 0;
   }
 
-  // Start filling in records.
+  // XXX: there are a few conditions where the ID for this table can't simply
+  // start at 1, so we iterate the auto-incrementing ID field in batch to the
+  // point where it's supposed to be. It's a little bit goofy to do it this way,
+  // but databases handle auto-increment fields differently, so the method to
+  // set it needs to be database-agnostic.
   foreach (array_fill(0, min(1000, $sandbox['target'] - $sandbox['current']), NULL) as $increment) {
-    islandora_xmlsitemap_get_incremented_id($increment);
+    islandora_xmlsitemap_insert_increment_record($increment);
+    islandora_xmlsitemap_delete_increment_record($increment);
     $sandbox['current']++;
   }
 
