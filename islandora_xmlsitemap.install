@@ -51,7 +51,6 @@ function islandora_xmlsitemap_schema() {
       ),
       'primary key' => array('id'),
       'unique keys' => array('pid' => array('pid')),
-      'indexes' => array('pid_index' => array('pid')),
     ),
   );
 }
