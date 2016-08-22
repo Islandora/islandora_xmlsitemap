@@ -86,7 +86,7 @@ function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
     ->fields('x', array('id', 'subtype'))
     ->condition('type', 'custom', '=')
     ->orderBy('id', 'ASC')
-    ->range(0, 1000)
+    ->range($sandbox['current'], 1000)
     ->execute()
     ->fetchAllAssoc('id');
   foreach ($records as $record) {
