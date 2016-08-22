@@ -51,6 +51,7 @@ function islandora_xmlsitemap_schema() {
       ),
       'primary key' => array('id'),
       'unique keys' => array('pid' => array('pid')),
+      'indexes' => array('pid_index' => array('pid')),
     ),
   );
 }
@@ -60,36 +61,41 @@ function islandora_xmlsitemap_schema() {
  */
 function islandora_xmlsitemap_update_7000(&$sandbox = array()) {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
-  if (!isset($sandbox['target'])) {
+  if (empty($sandbox)) {
     // Create our table, if it doesn't exist.
     if (!db_table_exists('islandora_xmlsitemap_entry_ids')) {
       $schema = islandora_xmlsitemap_schema();
       db_create_table('islandora_xmlsitemap_entry_ids', $schema['islandora_xmlsitemap_entry_ids']);
     }
-    // Set an initial value.
-    islandora_xmlsitemap_insert_increment_record(NULL);
-    // And immediately give it the boot.
-    islandora_xmlsitemap_delete_increment_record(NULL);
-    // Get the current max.
-    $q = db_select('xmlsitemap', 'x');
-    $q->addExpression('MAX(id)');
-    $q->condition('type', 'custom', '=');
-    $current_id = $q->execute()->fetchField();
-    $sandbox['target'] = $current_id !== FALSE ? $current_id : 1;
+    // Get the total of 'custom' records.
+    $sandbox['total'] = db_select('xmlsitemap', 'x')
+      ->condition('type', 'custom', '=')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
     $sandbox['current'] = 0;
   }
 
-  // XXX: there are a few conditions where the ID for this table can't simply
-  // start at 1, so we iterate the auto-incrementing ID field in batch to the
-  // point where it's supposed to be. It's a little bit goofy to do it this way,
-  // but databases handle auto-increment fields differently, so the method to
-  // set it needs to be database-agnostic.
-  foreach (array_fill(0, min(1000, $sandbox['target'] - $sandbox['current']), NULL) as $increment) {
-    islandora_xmlsitemap_insert_increment_record($increment);
-    islandora_xmlsitemap_delete_increment_record($increment);
+  // Could be empty.
+  if ($sandbox['total'] == 0) {
+    $context['#finished'] = 1;
+    return;
+  }
+
+  // Insert any existing records, 1000 at a time.
+  $records = db_select('xmlsitemap', 'x')
+    ->fields('x', array('id', 'subtype'))
+    ->condition('type', 'custom', '=')
+    ->orderBy('id', 'ASC')
+    ->range(0, 1000)
+    ->execute()
+    ->fetchAllAssoc('id');
+  foreach ($records as $record) {
+    $pid = str_replace('info:fedora/', '', $record->subtype);
+    islandora_xmlsitemap_insert_increment_record($pid);
     $sandbox['current']++;
   }
 
   // Are we done?
-  $context['#finished'] = $sandbox['current'] / $sandbox['target'];
+  $context['#finished'] = $sandbox['current'] / $sandbox['total'];
 }
