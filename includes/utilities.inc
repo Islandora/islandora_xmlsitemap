@@ -66,10 +66,14 @@ function islandora_xmlsitemap_add_or_update_link($pid, &$sandbox = NULL) {
   }
   $link += (array) islandora_xmlsitemap_get_current($pid);
   if (!isset($link['id'])) {
-    // An 'id' value would have been obtained by adding in the current link
-    // structure... Apparently, we're adding a new link, so let's grab the next
-    // 'custom' ID.
-    $link['id'] = db_query("SELECT MAX(id) FROM {xmlsitemap} WHERE type = 'custom'")->fetchField() + 1;
+    module_load_include('inc', 'islandora_xmlsitemap', 'includes/db');
+    try {
+      islandora_xmlsitemap_insert_increment_record($pid);
+    }
+    catch (PDOException $e) {
+      // Don't do anything in this case; we already have an ID.
+    }
+    $link['id'] = islandora_xmlsitemap_get_id_for_record($pid);
   }
 
   return xmlsitemap_link_save($link);
