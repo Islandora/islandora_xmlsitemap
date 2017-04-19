@@ -46,6 +46,8 @@ Objects must be publicly (anonymously) available to be included in the XML Sitem
 
 Please also note that objects marked as "inactive", whether manually or by using the [Simple Workflow](https://github.com/Islandora/islandora_simple_workflow) module, will still be indexed by default.
 
+Larger sites with greater than 100,000 objects may encounter issues during the sitemap building process with the default configuration, such as the process hanging around a specific number indefinitely or exiting the process entirely before completion. These users may want to try unchecking the "Prefetch URL aliases during sitemap generation" option found on the xmlsitemap admin configuration page (/admin/config/search/xmlsitemap/settings) and trying the process again.
+
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
