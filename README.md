@@ -50,7 +50,7 @@ Larger sites with greater than 100,000 objects may encounter issues during the s
 
 ## Documentation
 
-Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
+This module's documentation is also available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+XML+Sitemap).
 
 ## Troubleshooting/Issues
 
