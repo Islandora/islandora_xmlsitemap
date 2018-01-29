@@ -108,7 +108,7 @@ function islandora_xmlsitemap_batch_operation($jump, $cutoff, &$context) {
     '@total' => $sandbox['total'],
   ));
   $context['finished'] = $sandbox['offset'] / $sandbox['total'];
-  if ($context['finished'] >= 1) {
-    variable_set('islandora_xmlsitemap_last_modified_value', $sandbox['last_modified']);
-  }
+  
+  // Always update last_modified
+  variable_set('islandora_xmlsitemap_last_modified_value', $sandbox['last_modified']);
 }
