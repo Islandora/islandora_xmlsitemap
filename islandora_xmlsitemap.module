@@ -10,7 +10,11 @@ define('ISLANDORA_XMLSITEMAP_PATH_PREFIX', 'islandora/object/');
  */
 function islandora_xmlsitemap_cron() {
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
-  xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_get_batch');
+  xmlsitemap_run_unprogressive_batch(
+    'islandora_xmlsitemap_get_batch',
+    variable_get('islandora_xmlsitemap_generate_chunk_size', 100),
+    variable_get('islandora_xmlsitemap_generate_limit_cron', 1000)
+  );
 }
 
 /**
