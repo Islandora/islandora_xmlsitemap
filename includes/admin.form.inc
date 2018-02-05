@@ -34,13 +34,22 @@ function islandora_xmlsitemap_admin_form($form, &$form_state) {
     '#description' => t('Solr field in which we can perform sorting and range queries.'),
     '#default_value' => variable_get('islandora_xmlsitemap_last_modified_field', 'fgs_lastModifiedDate_dt'),
   );
-  $form['islandora_xmlsitemap_number_of_pids_to_process'] = array(
+  $form['islandora_xmlsitemap_generate_limit_cron'] = array(
     '#type' => 'textfield',
-    '#title' => 'Maximum Number of Islandora links to process at once',
+    '#title' => 'Maximum Number of Islandora links to process during hook_cron()',
     '#size' => 10,
     '#element_validate' => array('element_validate_integer_positive'),
-    '#default_value' => variable_get('islandora_xmlsitemap_number_of_pids_to_process', 1000),
-    '#description' => 'This is the number of Islandora/Fedora links we will process at once',
+    '#default_value' => variable_get('islandora_xmlsitemap_generate_limit_cron', 1000),
+    '#description' => 'This is the maximum number of Islandora/Fedora links we will automatically process when hook_cron() is called',
+  );
+
+  $form['islandora_xmlsitemap_generate_chunk_size'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Amount of Islandora links to fetch and process at once',
+    '#size' => 10,
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#default_value' => variable_get('islandora_xmlsitemap_generate_chunk_size', 100),
+    '#description' => 'This is the number of Islandora/Fedora links we will fetch and process at once (before updating the Last Modified value) when using the buttons below or when hook_cron() is called',
   );
 
   $form['actions'] = array(
@@ -74,7 +83,8 @@ function islandora_xmlsitemap_admin_form_submit(&$form, &$form_state) {
 
   $to_set = array(
     'islandora_xmlsitemap_last_modified_field',
-    'islandora_xmlsitemap_number_of_pids_to_process',
+    'islandora_xmlsitemap_generate_limit_cron',
+    'islandora_xmlsitemap_generate_chunk_size'
   );
   if ($button == 'generate' || $button == 'regenerate') {
     if ($button == 'regenerate') {
@@ -82,7 +92,10 @@ function islandora_xmlsitemap_admin_form_submit(&$form, &$form_state) {
     }
 
     module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
-    $batch = islandora_xmlsitemap_get_batch(100, -1);
+    $batch = islandora_xmlsitemap_get_batch(
+      variable_get('islandora_xmlsitemap_generate_chunk_size', 100),
+      NULL
+    );
     batch_set($batch);
   }
   elseif ($button == 'submit') {
