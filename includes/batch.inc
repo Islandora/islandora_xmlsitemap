@@ -168,7 +168,7 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
     $sandbox['current_node'] = $row['PID'];
 
     // Log result for post-processing in the 'finished' callback.
-    $context['results'][] = "Add/update ".$sandbox['current_node'];
+    $context['results'][] = "Add/update " . $sandbox['current_node'];
   }
   //Drop results when finished with them.
   $sandbox['queryProcessor']->resetResults();
