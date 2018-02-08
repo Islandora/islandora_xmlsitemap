@@ -52,7 +52,7 @@ Larger sites with greater than 100,000 objects may encounter issues during the s
 There is a Drush command available for the generation of sitemap links. This command allows you to optionally fetch a limited amount of objects similar to the hook_cron() and lets you define a custom amount to be fetched at once from SOLR.
 
 Command:  
-`drush islandora_xmlsitemap_generate [max_chunk_size] [limit] [--regenerate]`
+`drush islandora_xmlsitemap_generate [--max_chunk_size=100] [limit=1000] [--regenerate]`
 
 * `Max chunk size` defaults to 100
 * If no `limit` is set all objects will be processed
