@@ -5,6 +5,8 @@
  */
 
 /**
+ * Register the islandora_xmlsitemap Drush commands
+ *
  * Implements hook_drush_command().
  *
  * @return array
