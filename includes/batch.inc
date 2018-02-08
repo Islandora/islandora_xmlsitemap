@@ -113,12 +113,28 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
   $result       = $sandbox['queryProcessor']->islandoraSolrResult;
   $resultCount  = (int) $result['response']['numFound'];
 
-  // Catch empty result.
-  if ($result === NULL || $resultCount === 0) {
-    // Display error message.
-    $context['message'] = t('No results or SOLR error');
+  // Result will be null in case of SOLR error. The queryprocessor will have set
+  // an error using drupal_set_message.
+  $hasSolrError = ($result === NULL);
 
-    // Add error to the log.
+  // Catch a result that does not have any rows
+  $noResults = ($resultCount === 0);
+
+  // Check if we encountered error conditions
+  if ($hasSolrError || $noResults) {
+    // SOLR error
+    if ($hasSolrError) {
+      // Set message about error.
+      $context['message'] = t('SOLR error');
+    }
+
+    // No results
+    if ($noResults) {
+      // Set message about error.
+      $context['message'] = t('No results');
+    }
+
+    // Add error to the result list.
     $context['results'][] = $context['message'];
 
     // Set finished to 1 so the batch process will not loop endlessly.
@@ -126,6 +142,13 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
 
     // Return control to batch engine.
     return;
+  }
+
+   ) {
+    // Display error message.
+    $context['message'] = t('No results or SOLR error');
+
+
   }
 
   // Set total based on results (only once every batch).
@@ -245,7 +268,7 @@ function islandora_xmlsitemap_queryProcessor_last_modified_query($last_modified_
 function islandora_xmlsitemap_finished($success, $results, $operations) {
   if ($success) {
     // Display the result.
-    drupal_set_message(t('@count results processed', array('@count' => count($results))));
+    drupal_set_message(t('@count results', array('@count' => count($results))));
     drupal_set_message(t('The last result was "%final"', array('%final' => end($results))));
   }
   else {
