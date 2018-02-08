@@ -124,13 +124,13 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
   if ($hasSolrError || $noResults) {
     // SOLR error
     if ($hasSolrError) {
-      // Set message about error.
+      // Set message indicating a SOLR error.
       $context['message'] = t('SOLR error');
     }
 
     // No results
     if ($noResults) {
-      // Set message about error.
+      // Set message indicating no results.
       $context['message'] = t('No results');
     }
 
