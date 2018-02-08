@@ -33,7 +33,7 @@ function drush_islandora_xmlsitemap_generate_validate() {
   // Validate max_chunk_size option
   $max_chunk_size = drush_get_option('max_chunk_size', NULL);
   if ($max_chunk_size !== NULL) {
-    if (!islandora_xmlsitemap_is_integer_positive($max_chunk_size) || $max_chunk_size == 0) {
+    if (!islandora_xmlsitemap_is_integer_positive($max_chunk_size)) {
       return drush_set_error('The option "max_chunk_size" must be a positive integer greater than 0.');
     }
   }
@@ -41,7 +41,7 @@ function drush_islandora_xmlsitemap_generate_validate() {
   // Validate limit option
   $limit = drush_get_option('limit', NULL);
   if ($limit !== NULL) {
-    if (!islandora_xmlsitemap_is_integer_positive($limit) || $limit == 0) {
+    if (!islandora_xmlsitemap_is_integer_positive($limit)) {
       return drush_set_error('The option "limit" must be a positive integer greater than 0.');
     }
   }
@@ -84,5 +84,8 @@ function drush_islandora_xmlsitemap_generate() {
  *   TRUE if $value is a positive integer, FALSE if $value is not a positive integer
  */
 function islandora_xmlsitemap_is_integer_positive($value) {
-    return ($value !== '' && (!is_numeric($value) || intval($value) != $value || $value <= 0));
+    if ($value !== '' && (!is_numeric($value) || intval($value) != $value || $value <= 0)) {
+      return FALSE;
+    }
+    return TRUE;
 }
