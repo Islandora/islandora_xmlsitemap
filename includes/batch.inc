@@ -144,13 +144,6 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
     return;
   }
 
-   ) {
-    // Display error message.
-    $context['message'] = t('No results or SOLR error');
-
-
-  }
-
   // Set total based on results (only once every batch).
   if (!isset($sandbox['total'])) {
     if (isset($sandbox['batch_limit'])) {
