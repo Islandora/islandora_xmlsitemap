@@ -49,14 +49,14 @@ Please also note that objects marked as "inactive", whether manually or by using
 Larger sites with greater than 100,000 objects may encounter issues during the sitemap building process with the default configuration, such as the process hanging around a specific number indefinitely or exiting the process entirely before completion. These users may want to try unchecking the "Prefetch URL aliases during sitemap generation" option found on the xmlsitemap admin configuration page (/admin/config/search/xmlsitemap/settings) and trying the process again.
 
 ## Bulk generation using drush
-There is a Drush command available for the generation of sitemap links. This command allows you to optionally fetch a limited amount of objects similar to the hook_cron() and lets you define a custom amount to be fetched at once from SOLR.
+There is a Drush command available for the generation of sitemap links. This command allows you to optionally fetch a limited amount of objects (`limit`) similar to the hook_cron() and lets you define a custom amount to be fetched at once (`max_chunk_size`) from SOLR.
 
 Command:  
-`drush islandora_xmlsitemap_generate [--max_chunk_size=100] [limit=1000] [--regenerate]`
+`drush islandora_xmlsitemap_generate [--max_chunk_size=100] [--limit=1000] [--regenerate]`
 
-* `Max chunk size` defaults to 100
+* The `max_chunk_size` defaults to 100
 * If no `limit` is set all objects will be processed
-* The `--regenerate` flag removes the "last_modified" value so will cause processing to start at the beginning
+* The `--regenerate` flag removes the "last_modified" value so will cause processing to start at the beginning. *Use with caution if you have lots of objects*.
 
 ## Documentation
 
