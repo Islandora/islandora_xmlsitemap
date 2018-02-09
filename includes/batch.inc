@@ -102,7 +102,7 @@ function islandora_xmlsitemap_batch_operation($max_chunk_size = 100, $batch_limi
   // the batch_limit.
   if (isset($sandbox['batch_limit'])) {
     // Max chunk size for limited batches.
-    $sandbox['max_chunk_size'] = min($sandbox['batch_limit'] - $sandbox['progress'], $sandbox['batch_limit']);
+    $sandbox['max_chunk_size'] = min($sandbox['batch_limit'] - $sandbox['progress'], $sandbox['max_chunk_size']);
 
     // Update SOLR limit.
     $sandbox['queryProcessor']->solrLimit = $sandbox['max_chunk_size'];

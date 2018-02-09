@@ -69,9 +69,17 @@ function drush_islandora_xmlsitemap_generate() {
     variable_del('islandora_xmlsitemap_last_modified_value');
   }
 
-  // Start the process.
+  // Get the batch
   module_load_include('inc', 'islandora_xmlsitemap', 'includes/batch');
-  xmlsitemap_run_unprogressive_batch('islandora_xmlsitemap_get_batch', drush_get_option('max_chunk_size', 100), drush_get_option('limit', NULL));
+  $batch = islandora_xmlsitemap_get_batch(drush_get_option('max_chunk_size', 100), drush_get_option('limit', NULL));
+
+  // Set and configure the batch.
+  batch_set($batch);
+  $batch =& batch_get();
+  $batch['progressive'] = FALSE;
+
+  // Start processing
+  drush_backend_batch_process();
 }
 
 /**
