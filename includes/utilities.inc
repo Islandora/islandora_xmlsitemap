@@ -47,7 +47,7 @@ function islandora_xmlsitemap_get_subtype_id($pid) {
  *   The link structure, which should have already been entered into the
  *   {xmlsitemap} table.
  */
-function islandora_xmlsitemap_add_or_update_link($pid, &$sandbox = NULL) {
+function islandora_xmlsitemap_add_or_update_link($pid, array &$sandbox = NULL) {
   $object = islandora_object_load($pid);
   $link = array(
     'type' => 'custom',

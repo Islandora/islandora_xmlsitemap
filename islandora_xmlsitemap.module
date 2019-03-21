@@ -1,10 +1,12 @@
 <?php
+
 /**
  * @file
  * Main file for the islandora_xmlsitemap module.
  */
 
 define('ISLANDORA_XMLSITEMAP_PATH_PREFIX', 'islandora/object/');
+
 /**
  * Implements hook_cron().
  */
