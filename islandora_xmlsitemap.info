@@ -6,4 +6,4 @@ dependencies[] = islandora
 dependencies[] = xmlsitemap_custom
 dependencies[] = islandora_solr
 configure = admin/islandora/xmlsitemap
-version = 7.x-dev
+version = 7.x-1.13
